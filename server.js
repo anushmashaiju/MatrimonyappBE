@@ -4,9 +4,10 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv')
 const session = require('express-session');
 const authRouter = require('./Routes/authRoutes');
+const verifyRouter = require ('./Routes/verify-route')
 const connectDb = require('./Config/db');
-const passportAuthentication = require('./Middleware/passport');
-const passport = require('passport');
+
+const passport = require('./Middleware/passport');
 const app = express();
 dotenv.config();
 
@@ -16,20 +17,27 @@ app.use(session({
   resave: false,
   saveUninitialized: false
 }));
- const corsOptions = {
+app.use(passport.initialize());
+app.use(passport.session());
+
+const corsOptions = {
   origin: 'http://localhost:3000',
-  credentials: true,            //access-control-allow-credentials:true
-   optionSuccessStatus: 200,
- }
+  credentials: true,
+  optionSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 
 // Middleware
 
 // app.use(cors(corsOptions));
 
-passportAuthentication(passport)
+
 
 // Routes
 app.use('/auth', authRouter);
+app.use('/verify', verifyRouter);
+
 app.get('/',(req,res)=>{
   res.send('Welcome to the API');
 })

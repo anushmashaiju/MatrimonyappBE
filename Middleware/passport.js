@@ -1,64 +1,51 @@
 const passport = require('passport');
-const LocalStrategy = require('passport-local').Strategy;
 const GoogleStrategy = require('passport-google-oauth20').Strategy;
-const User = require('../Model/userModel');  // Adjust the path according to your folder structure
-const bcrypt = require('bcryptjs');
+const dotenv = require('dotenv');
+const User = require('../Model/userModel');
 
-function passportAuthentication(passport) {
-    // Local Strategy
-    passport.use(new LocalStrategy({ usernameField: 'email' }, async (email, password, done) => {
-        try {
-            const user = await User.findOne({ email });
-            if (!user) {
-                return done(null, false, { message: 'Incorrect email.' });
-            }
-            const isMatch = await bcrypt.compare(password, user.password);
-            if (!isMatch) {
-                return done(null, false, { message: 'Incorrect password.' });
-            }
-            return done(null, user);
-        } catch (err) {
-            return done(err);
-        }
-    }));
+dotenv.config();
 
-    // Google Strategy
-    passport.use(new GoogleStrategy({
-        clientID: process.env.GOOGLE_CLIENT_ID,
-        clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-        callbackURL: 'http://localhost:8000/auth/google/callback',
-    }, async (accessToken, refreshToken, profile, done) => {
-        const newUser = {
-            googleId: profile.id,
-            displayName: profile.displayName,
-            firstName: profile.name.givenName,
-            lastName: profile.name.familyName,
-            profilePic: profile.photos[0].value,
-            email: profile.emails[0].value,
-        };
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL
+  },
+  async (accessToken, refreshToken, profile, cb) => {
+    const newUser = {
+      googleId: profile.id,
+      firstName: profile.name.givenName,
+      lastName: profile.name.familyName,
+      email: profile.emails[0].value
+    };
+    console.log(profile);
 
-        try {
-            let user = await User.findOne({ googleId: profile.id });
-            if (user) {
-                return done(null, user);
-            } else {
-                user = new User(newUser);
-                await user.save();
-                return done(null, user);
-            }
-        } catch (err) {
-            console.error(err);
-            return done(err, null);
-        }
-    }));
+    try {
+      let user = await User.findOne({ googleId: profile.id });
 
-    passport.serializeUser((user, done) => {
-        done(null, user.id);
-    });
+      if (user) {
+        cb(null, user);
+      } else {
+        user = await User.create(newUser);
+        cb(null, user);
+      }
+    } catch (err) {
+      console.error(err);
+      cb(err, null); // Don't forget to call cb with error if any
+    }
+  }
+));
 
-    passport.deserializeUser((id, done) => {
-        User.findById(id, (err, user) => done(err, user));
-    });
-}
+passport.serializeUser((user, done) => {
+  done(null, user.id);
+});
 
-module.exports = passportAuthentication;
+passport.deserializeUser(async (id, done) => {
+  try {
+    const user = await User.findById(id);
+    done(null, user);
+  } catch (err) {
+    done(err, null);
+  }
+});
+
+module.exports = passport;

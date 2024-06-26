@@ -1,65 +1,42 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  googleId: {
-    type: String,
-    required: true,
-  },
-  displayName: {
-    type: String,
-    required: true,
-  },
   firstName: {
     type: String,
-    required: true,
+    required: true
   },
   lastName: {
     type: String,
-    required: true,
+    required: true
   },
-  profilePic: {
-    type: String,
-  },
+  gender: String,
+  dob: Date,
+  phone: String,
   email: {
     type: String,
     required: true,
     unique: true
   },
-  dob: { 
-    type: Date ,
-},
-  age: {
-    type: Number,
-  },
-  gender: {
-    type: String,
-  },
-  city: {
-    type: String,
-  },
-  state: {
-    type: String,
-  },
-  district: {
-    type: String,
-  },
-  qualification: {
-    type: String,
-  },
-  professional: {
-    type: String,
-  },
   password: {
     type: String,
+    required: function() {
+      return !this.googleId;
+    }
   },
-  confirmPassword:{
-    type:String
+  googleId: {
+    type: String,
+    required: function() {
+      return !this.password;
+    }
   },
-  createdAt: {
-    type: Date,
-    default: Date.now,
-  },
+  displayName: {
+    type: String,
+    required: function() {
+      return !this.password;
+    }
+  }
 });
+
 const User = mongoose.model('User', userSchema);
 
 module.exports = User;
