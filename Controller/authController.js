@@ -20,6 +20,7 @@ const signUp = async (req, res) => {
 
     // Create a new user
     const newUser = new User({
+  
       firstName,
       lastName,
       gender,

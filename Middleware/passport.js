@@ -5,47 +5,58 @@ const User = require('../Model/userModel');
 
 dotenv.config();
 
-passport.use(new GoogleStrategy({
-    clientID: process.env.GOOGLE_CLIENT_ID,
-    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL
-  },
-  async (accessToken, refreshToken, profile, cb) => {
-    const newUser = {
-      googleId: profile.id,
-      firstName: profile.name.givenName,
-      lastName: profile.name.familyName,
-      email: profile.emails[0].value
-    };
-    console.log(profile);
+module.exports = function(passport) {
+  passport.use(new GoogleStrategy({
+      clientID: process.env.GOOGLE_CLIENT_ID,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+      callbackURL: process.env.GOOGLE_CALLBACK_URL
+    },
+    async (accessToken, refreshToken, profile, done) => {
+      try {
+          let user = await User.findOne({ googleID: profile.id, email: profile.emails[0].value });
 
-    try {
-      let user = await User.findOne({ googleId: profile.id });
+          if (!user) {
+              const newUser = {
+                  googleID: profile.id,
+                  displayName: profile.displayName,
+                  firstName: profile.name.givenName,
+                  lastName: profile.name.familyName,
+                  profilePic: profile.photos[0].value,
+                  email: profile.emails[0].value,
+                  qualification: "",
+                  professional: "",
+                  dateOfBirth: "",
+                  age: "",
+                  gender: "",
+                  city: "",
+                  state: "",
+                  district: "",
+                  password: "",
+                  confirmPassword: "",
+                  isAdmin: false,
+                  isStaff: false
+              };
 
-      if (user) {
-        cb(null, user);
-      } else {
-        user = await User.create(newUser);
-        cb(null, user);
+              user = new User(newUser);
+              await user.save();
+              done(null, { user, isNew: true });
+          } else {
+              user.googleID = profile.id;
+              await user.save();
+              done(null, { user, isNew: false });
+          }
+      } catch (err) {
+          console.error(err);
+          done(err, null);
       }
-    } catch (err) {
-      console.error(err);
-      cb(err, null); // Don't forget to call cb with error if any
     }
-  }
-));
+  ));
 
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
+  passport.serializeUser((data, done) => {
+    done(null, data.user.id);
+  });
 
-passport.deserializeUser(async (id, done) => {
-  try {
-    const user = await User.findById(id);
-    done(null, user);
-  } catch (err) {
-    done(err, null);
-  }
-});
-
-module.exports = passport;
+  passport.deserializeUser((id, done) => {
+    User.findById(id, (err, user) => done(err, user));
+  });
+};

@@ -4,21 +4,30 @@ const mongoose = require('mongoose');
 const dotenv = require('dotenv')
 const session = require('express-session');
 const authRouter = require('./Routes/authRoutes');
-const verifyRouter = require ('./Routes/verify-route')
 const connectDb = require('./Config/db');
+const passport = require('passport');
+const passportSetup = require('./Middleware/passport');
+const cookieParser = require ('cookie-parser');
+//const bodyParser =require ('body-parser');
+const userRouter = require('./Routes/userRoutes');
+const morgan = require('morgan');
 
-const passport = require('./Middleware/passport');
 const app = express();
-dotenv.config();
 
+dotenv.config();
 app.use(express.json());
+app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
+//app.use(bodyParser.json()); 
+//app.use(bodyParser.urlencoded({ extended: true }));
+passportSetup(passport) //
+
 app.use(session({
-  secret: 'secret',
+  secret: 'secret',//
   resave: false,
   saveUninitialized: false
 }));
-app.use(passport.initialize());
-app.use(passport.session());
+
+app.use(morgan('dev')); // Add logging
 
 const corsOptions = {
   origin: 'http://localhost:3000',
@@ -28,19 +37,22 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 
-// Middleware
-
-// app.use(cors(corsOptions));
-
-
+app.use((err,req,res,next)=>{
+  const errorStatus =err.status || 500;
+  const errorMessage = err.message || "Something went Wrong"
+  return res.status(errorStatus).json({
+      success:false,
+      status:errorStatus,
+      message:errorMessage, 
+      stack:err.stack
+  })
+})
 
 // Routes
+app.use(cookieParser())
 app.use('/auth', authRouter);
-app.use('/verify', verifyRouter);
+app.use('/user', userRouter);
 
-app.get('/',(req,res)=>{
-  res.send('Welcome to the API');
-})
 // const PORT = process.env.PORT || 8000;
 app.listen(8000, () => {
   connectDb()
