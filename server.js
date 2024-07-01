@@ -11,11 +11,12 @@ const cookieParser = require ('cookie-parser');
 //const bodyParser =require ('body-parser');
 const userRouter = require('./Routes/userRoutes');
 const morgan = require('morgan');
-
+const path = require('path');
 const app = express();
 
 dotenv.config();
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use(express.urlencoded({ extended: true })); // Parse URL-encoded bodies
 //app.use(bodyParser.json()); 
 //app.use(bodyParser.urlencoded({ extended: true }));

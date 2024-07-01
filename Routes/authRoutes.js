@@ -26,7 +26,7 @@ router.get('/google/callback',
         if (isNew) {
             res.redirect(`http://localhost:8000/auth/signup/${userId}`);
         } else {
-            res.redirect('http://localhost:8000/user/profile');
+            res.redirect('http://localhost:3000/profile');
         }
     }
 );
