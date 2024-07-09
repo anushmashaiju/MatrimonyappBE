@@ -24,9 +24,9 @@ router.get('/google/callback',
         const isNew = req.user.isNew;
         const userId = req.user.user._id;
         if (isNew) {
-            res.redirect(`http://localhost:8000/auth/signup/${userId}`);
+            res.redirect(`http://localhost:3000/auth/signup/${userId}`);
         } else {
-            res.redirect('http://localhost:3000/profile');
+            res.redirect('http://localhost:3000/register');
         }
     }
 );

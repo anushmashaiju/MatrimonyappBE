@@ -2,14 +2,9 @@ const{ Timestamp }=require ("mongodb");
 const mongoose =require ('mongoose');
 const userSchema = mongoose.Schema({
     googleID: {
-        type: String,
-    
-        unique:true
+        type: String,   
     },
-    displayName: {
-        type: String,
-      
-    },
+   
     firstName: {
         type: String,
         required: true
@@ -67,8 +62,12 @@ const userSchema = mongoose.Schema({
     isStaff: {
         type: Boolean,
         default: false
-    }
-
+    },
+   /* userProfile: {
+      type: mongoose.Types.ObjectId,
+      ref: 'register-user'
+  }
+*/
 },
 {timestamp:true}
 )

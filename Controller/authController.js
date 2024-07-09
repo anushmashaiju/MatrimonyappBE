@@ -1,11 +1,11 @@
-const User = require('../Model/userModel');
+const User = require('../Model/authModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const passport = require('passport');
 const { body, validationResult } = require('express-validator');
 const jwtSecretKey = process.env.JWT_SECRET || 'your-jwt-secret-key';
 
 const signUp = async (req, res) => {
+  
   try {
     const { firstName, lastName, gender, dob, phone, email, password } = req.body;
 
@@ -20,11 +20,10 @@ const signUp = async (req, res) => {
 
     // Create a new user
     const newUser = new User({
-  
       firstName,
       lastName,
       gender,
-      dob,
+      dateOfBirth: dob, // Assuming 'dob' from req.body is the date of birth
       phone,
       email,
       password: hashedPassword
@@ -40,7 +39,6 @@ const signUp = async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 };
-
 
 const login = [
   body('email').isEmail(),

@@ -1,51 +1,38 @@
+// models/Profile.js
 const mongoose = require('mongoose');
 
-const userProfileSchema = new mongoose.Schema({
-  basicDetails: {
-    age: {
-      type: Number,
-      required: true,
-    },
-    dateOfBirth: {
-      type: Date,
-      required: true,
-    },
-    qualification: {
-      type: String,
-      required: true,
-    },
-    hobbies: {
-      type: String,
-      required: true,
-    },
-    interest: {
-      type: String,
-      required: true,
-    },
-    drinkingHabits: {
-      type: String,
-      enum: ['yes', 'no'],
-      required: true,
-    },
-    smokingHabits: {
-      type: String,
-      enum: ['yes', 'no'],
-      required: true,
-    },
-    profilePicture: {
-      type: String, // Base64 string
-    },
-    multipleImages: [
-      {
-        type: String, // Base64 string
-      },
-    ],
-    shortReel: {
-      type: String, // Base64 string
-    },
-  },
+const locationSchema = new mongoose.Schema({
+  state: { type: String, required: true },
+  district: { type: String, required: true },
 });
 
-const UserProfile = mongoose.model('UserProfile', userProfileSchema);
+const profileSchema = new mongoose.Schema({
+  userId:{
+    type:mongoose.Types.ObjectId,
+    ref:'user'
+    },
+  fatherName: { type: String, required: true },
+  fatherOccupation: { type: String, required: true },
+  motherName: { type: String, required: true },
+  motherOccupation: { type: String, required: true },
+  noOfSiblings: { type: Number, required: true },
+  noOfBrothers: { type: Number, required: false },
+  noOfSisters: { type: Number, required: false },
+  noOfMarried: { type: Number, required: false },
+  noOfUnmarried: { type: Number, required: false },
+  familyClass: { type: String, required: true },
+  familyValue: { type: String, required: true },
+  userIncome: { type: Number, required: true },
+  occupation: { type: String, required: true },
+  height: { type: Number, required: true },
+  weight: { type: Number, required: true },
+  complexion: { type: String, required: true },
+  disability: { type: String, required: false },
+  religion: { type: String, required: true },
+  caste: { type: String, required: true },
+  subCaste: { type: String, required: true },
+  location: locationSchema,
+  horoscope: { type: String, required: true },
+});
 
-module.exports = UserProfile;
+module.exports = mongoose.model('profile-user', profileSchema);

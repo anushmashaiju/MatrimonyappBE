@@ -1,7 +1,7 @@
-const UserProfile = require('../Model/userProfileModel');
+const UserProfile = require('../Model/userRegisterModel');
 const multer = require('multer');
 const path = require('path');
-
+const UserPersonal = require ('../Model/userProfileModel')
 // Set up multer for file handling
 const storage = multer.memoryStorage();
 const upload = multer({ storage }).fields([
@@ -18,7 +18,11 @@ const createProfile = async (req, res) => {
     }
 
     try {
+         // Assuming req.user contains the authenticated user information with ObjectId
+        // const userId = req.user.id;
       const {
+    
+        name,
         age,
         dateOfBirth,
         qualification,
@@ -42,6 +46,7 @@ const createProfile = async (req, res) => {
 
       const newUserProfile = new UserProfile({
         basicDetails: {
+          name,
           age,
           dateOfBirth,
           qualification,
@@ -54,15 +59,15 @@ const createProfile = async (req, res) => {
           shortReel,
         },
       });
-
-      await newUserProfile.save();
-
-      res.status(201).json({ message: 'Profile created successfully' });
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      res.status(500).json({ message: 'Internal server error' });
+      const savedUserProfile = await  newUserProfile.save();
+      res.status(200).json(savedUserProfile);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json(err.message || "Internal Server Error");
     }
   });
-};
 
-module.exports = createProfile;
+}
+module.exports = {createProfile};
+ 
+
