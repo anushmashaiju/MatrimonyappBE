@@ -1,28 +1,74 @@
 const jwt = require('jsonwebtoken');
-const User = require('../Model/authModel'); // Adjust the path as necessary
-const jwtSecretKey = process.env.JWT_SECRET || 'your-jwt-secret-key';
 
-const authenticateToken = async (req, res, next) => {
-  const authHeader = req.header('Authorization');
-
-  if (!authHeader) {
-    return res.status(401).json({ message: 'Access denied, token missing!' });
-  }
-
-  const token = authHeader.split(' ')[1];
+const authenticateUser = async (req, res, next) => {
+  const token = req.cookies.token;
+  console.log('Cookies:', req.cookies); // Log the cookies object
+  console.log('Token:', token); // Log the token
 
   if (!token) {
-    return res.status(401).json({ message: 'Access denied, token missing!' });
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 
-  try {
-    const decoded = jwt.verify(token, jwtSecretKey);
-    req.user = await User.findById(decoded.user.id).select('-password'); // Exclude the password field
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      console.error('Token verification error:', err); // Log the error
+      return res.status(401).json({ message: 'Token expired or invalid', error: err });
+    }
+
+    console.log('Decoded token:', decoded); // Log the decoded token
+
+    userId = decoded.id; 
+    console.log('User ID:', userId); // Log the user ID
+
     next();
-  } catch (error) {
-    console.error('Error authenticating token:', error);
-    res.status(401).json({ message: 'Invalid token!' });
+  });
+};
+
+module.exports = authenticateUser;
+
+// Middleware to authenticate token - authMiddleware.js
+
+/*const jwt = require('jsonwebtoken');
+
+const authenticateToken = (req, res, next) => {
+  const authHeader = req.headers['x-access-token'];
+  
+
+  if (!token) {
+    return res.sendStatus(401).json({message:'unauthorized'}); // Unauthorized
   }
+try{
+  const decoded=jwt.verify(token, process.env.JWT_SECRET);
+  req.userId=decoded.userId;
+    next();
+  }
+catch(error){
+  console.log(error);
+res.sendStatus(401).json({message:'unauthorized verification'});
+}
 };
 
 module.exports = authenticateToken;
+*/
+
+
+/*const jwt = require('jsonwebtoken');
+
+const authenticateToken = (req, res, next) => {
+const authHeader = req.headers['authorization'];
+  const token =authHeader && authHeader.split(' ')[1];
+ if (token == null){
+  return res.sendStatus(401);
+ }
+ jwt.verify (token,process.env.JWT_SECRET ,(err,user) =>{
+  if(err){
+    return res.sendStatus(403);
+  }
+  req.user = user;
+  next()
+ })
+}
+  
+
+module.exports = authenticateToken;
+*/

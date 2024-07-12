@@ -1,10 +1,9 @@
-const{ Timestamp }=require ("mongodb");
-const mongoose =require ('mongoose');
+const mongoose = require('mongoose');
+
 const userSchema = mongoose.Schema({
     googleID: {
-        type: String,   
+        type: String,
     },
-   
     firstName: {
         type: String,
         required: true
@@ -16,16 +15,13 @@ const userSchema = mongoose.Schema({
     age: {
         type: Number,
     },
-    gender:{
+    gender: {
         type: String,
     },
     email: {
         type: String,
         required: true,
-        unique:true
-    },
-    dateOfBirth: {
-        type: Date,
+        unique: true
     },
     city: {
         type: String,
@@ -51,6 +47,9 @@ const userSchema = mongoose.Schema({
     confirmPassword: {
         type: String
     },
+    basicDetails: {
+        gender: { type: String},
+      },
     createdAt: {
         type: Date,
         default: Date.now,
@@ -62,15 +61,9 @@ const userSchema = mongoose.Schema({
     isStaff: {
         type: Boolean,
         default: false
-    },
-   /* userProfile: {
-      type: mongoose.Types.ObjectId,
-      ref: 'register-user'
-  }
-*/
+    }
 },
-{timestamp:true}
-)
+{ timestamps: true });
 
-const User = mongoose.model('User', userSchema)
+const User = mongoose.model('User', userSchema);
 module.exports = User;

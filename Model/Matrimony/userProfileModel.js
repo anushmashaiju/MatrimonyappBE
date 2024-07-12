@@ -1,4 +1,3 @@
-// models/Profile.js
 const mongoose = require('mongoose');
 
 const locationSchema = new mongoose.Schema({
@@ -7,10 +6,7 @@ const locationSchema = new mongoose.Schema({
 });
 
 const profileSchema = new mongoose.Schema({
-  userId:{
-    type:mongoose.Types.ObjectId,
-    ref:'user'
-    },
+  userId: { type: mongoose.Schema.Types.ObjectId, required: true, ref: 'users' },
   fatherName: { type: String, required: true },
   fatherOccupation: { type: String, required: true },
   motherName: { type: String, required: true },
@@ -35,4 +31,4 @@ const profileSchema = new mongoose.Schema({
   horoscope: { type: String, required: true },
 });
 
-module.exports = mongoose.model('profile-user', profileSchema);
+module.exports = mongoose.model('PersonalProfile-Detail', profileSchema);
