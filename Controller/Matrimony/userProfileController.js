@@ -17,9 +17,10 @@ const createProfile = async (req, res) => {
 };
 const getProfileByUserId = async (req, res) => {
   try {
-    const userId = req.params.userId; // Extract userId from request parameters
+    const { userId } = req.params; // Extract userId from request parameters
 
     const profile = await Profile.findOne({ userId });
+  
     if (!profile) {
       return res.status(404).json({ message: 'Profile not found' });
     }
@@ -29,6 +30,24 @@ const getProfileByUserId = async (req, res) => {
     res.status(500).json({ message: 'Error fetching profile', error });
   }
 };
+
+const getCurrentProfileByUserId = async (req, res) => {
+  try {
+    const id = userId; // Extract userId from request parameters
+
+    const profile = await Profile.findOne({ userId });
+  
+    if (!profile) {
+      return res.status(404).json({ message: 'Profile not found' });
+    }
+
+    res.status(200).json(profile);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching profile', error });
+  }
+};
+
+
 const getAllProfiles = async (req, res) => {
   try {
     const profiles = await Profile.find();
@@ -38,4 +57,4 @@ const getAllProfiles = async (req, res) => {
   }
 };
 
-module.exports = { createProfile,getProfileByUserId ,getAllProfiles };
+module.exports = { createProfile,getProfileByUserId ,getAllProfiles,getCurrentProfileByUserId };

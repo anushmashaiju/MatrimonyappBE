@@ -1,6 +1,6 @@
-// controllers/userRegisterController.js
+
 const UserRegister = require('../Model/userRegisterModel');
-const User = require('../Model/authModel'); // Import the User model
+const User = require('../Model/authModel');
 const multer = require('multer');
 
 const storage = multer.memoryStorage();
@@ -29,7 +29,8 @@ const createRegister = async (req, res) => {
         drinkingHabits,
         smokingHabits,
       } = req.body;
-      const id = userId; // Assuming you have userId in your token payload
+
+      const id = userId; // Use req.userId set in the middleware
 
       if (!id) {
         return res.status(400).json({ message: 'User ID is required' });
@@ -76,10 +77,30 @@ const createRegister = async (req, res) => {
 
 const getRegisteredDetails = async (req, res) => {
   try {
-    const userId = req.params.userId; // Extract userId from request parameters
+   const { userId } = req.params;  // Extract userId from request parameters
+console.log("my user id is",userId)
+    const registeredDetails = await UserRegister.findOne({ userId });
+     // Assuming User and UserRegister model connection
 
-    const registeredDetails = await UserRegister.findOne({ userId }); // Assuming User and UserRegister model connection
-    if (!registeredDetails) {
+     if (!registeredDetails) {
+      return res.status(404).json({ message: 'User details not found' });
+    }
+
+    res.status(200).json(registeredDetails);
+  } catch (error) {
+    console.error('Error fetching registered details:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getcurrentRegisteredDetails = async (req, res) => {
+  try {
+    const id = userId; // Extract userId from request parameters
+console.log("my user id is",userId)
+    const registeredDetails = await UserRegister.findOne({ userId });
+     // Assuming User and UserRegister model connection
+
+     if (!registeredDetails) {
       return res.status(404).json({ message: 'User details not found' });
     }
 
@@ -107,8 +128,91 @@ const getOppositeGenderProfiles = async (req, res) => {
   }
 };
 
+const getAllRegisteredDetails = async (req, res) => {
+  try {
+    const registeredDetails = await UserRegister.find();
+    res.status(200).json(registeredDetails);
+  } catch (error) {
+    console.error('Error fetching all registered details:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+const getCurrentUser = async (req, res) => {
+  try {
+    //const userId = req.userId; // Use req.userId set in the middleware
+const id = userId;
+    if (!userId) {
+      return res.status(401).json({ message: 'Unauthorized' });
+    }
+
+    const user = await User.findById(userId).select('basicDetails');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      userId: id,
+     gender,
+    });
+  } catch (error) {
+    console.error('Error fetching current user:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
+// Update basic details
+const updateBasicDetails = async (req, res) => {
+  const { userId } = req.params; // Extract userId from request parameters
+  const {
+      name,
+      age,
+      gender,
+      dateOfBirth,
+      qualification,
+      hobbies,
+      interest,
+      drinkingHabits,
+      smokingHabits,
+      profilePicture, // Assuming you handle image uploads separately
+      multipleImages,
+      shortReel,
+  } = req.body;
+
+  try {
+      const updatedUserRegister = await UserRegister.findOneAndUpdate(
+          { userId },
+          {
+              $set: {
+                  'basicDetails.name': name,
+                  'basicDetails.age': age,
+                  'basicDetails.gender': gender,
+                  'basicDetails.dateOfBirth': dateOfBirth,
+                  'basicDetails.qualification': qualification,
+                  'basicDetails.hobbies': hobbies,
+                  'basicDetails.interest': interest,
+                  'basicDetails.drinkingHabits': drinkingHabits,
+                  'basicDetails.smokingHabits': smokingHabits,
+                  'basicDetails.profilePicture': profilePicture,
+                  'basicDetails.multipleImages': multipleImages,
+                  'basicDetails.shortReel': shortReel,
+              },
+          },
+          { new: true } // Return the updated document
+      );
+
+      if (!updatedUserRegister) {
+          return res.status(404).json({ message: 'User details not found' });
+      }
+
+      res.status(200).json(updatedUserRegister);
+  } catch (error) {
+      console.error('Error updating basic details:', error);
+      res.status(500).json({ message: 'Server error' });
+  }
+};
 module.exports = {
   createRegister,
   getRegisteredDetails,
-  getOppositeGenderProfiles
+  getOppositeGenderProfiles, getAllRegisteredDetails,getCurrentUser,getcurrentRegisteredDetails ,updateBasicDetails,
 };

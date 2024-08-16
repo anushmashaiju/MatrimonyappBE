@@ -18,32 +18,42 @@ const userProfileRouter = require('./Routes/Matrimony/userProfileRoutes');
 const userPreferenceRouter = require('./Routes/Matrimony/userPreferenceRoutes');
 const userRegisterRouter = require ('./Routes/userRegisterRoutes')
 const  useremployementRouter = require ('./Routes/employement')
+const  chatRouter = require ('./Routes/Matrimony/chatRoutes.js')
+const requestRouter =require ('./Routes/Matrimony/requestRoutes.js')
+//const  connectingMatrimonyRouter = require ('./Routes/Matrimony/connectingMatrimonyRoutes')
 
 dotenv.config();
 
 const app = express();
 const server = http.createServer(app);
 
-// Socket.io setup
 const io = socketIo(server, {
   cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"],
-    credentials: true,
+    origin: "http://localhost:3000", // Your frontend URL
+    methods: ["GET", "POST"]
   }
+});
+
+app.use((req, res, next) => {
+  req.io = io;
+  next();
 });
 
 io.on('connection', (socket) => {
   console.log('A user connected');
+
   socket.on('disconnect', () => {
     console.log('User disconnected');
   });
+
+  socket.on('join', (userId) => {
+    socket.join(userId);
+  });
+
   socket.on('chat message', (msg) => {
-    console.log('Message: ' + msg);
-    io.emit('chat message', msg);
+    io.to(msg.receiverId).emit('message', msg);
   });
 });
-
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -67,6 +77,10 @@ app.use('/user', userProfileRouter);
 app.use('/user', userPreferenceRouter);
 app.use('/user', userRegisterRouter);
 app.use('/user', useremployementRouter);
+app.use('/user', requestRouter);
+app.use('/chats', chatRouter);
+
+//app.use('/user', connectingMatrimonyRouter);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
